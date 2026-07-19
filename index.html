@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UtangTeman - Aplikasi Pencatat Utang</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-indigo-100 pb-10">
+
+    <!-- Header / Navbar -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-indigo-600 p-2 rounded-xl">
+                        <i data-lucide="wallet" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                        UtangTeman
+                    </span>
+                </div>
+                <div>
+                    <div class="w-10 h-10 rounded-full bg-slate-100 border-2 border-white shadow-sm overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User Avatar" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        <!-- Dashboard Stats -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 text-slate-800">Ringkasan</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card Total Utang (Belum Lunas) -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="alert-circle" class="w-24 h-24 text-rose-500"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-sm font-medium text-slate-500 mb-1">Total Utang Nyangkut</p>
+                        <h3 id="stat-belum-lunas" class="text-3xl font-bold text-rose-600 mb-4">Rp 0</h3>
+                        <div class="flex items-center gap-2 text-sm text-slate-600">
+                            <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+                            <span id="stat-orang-ngutang">Di 0 Teman</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Total Lunas -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="check-circle-2" class="w-24 h-24 text-emerald-500"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-sm font-medium text-slate-500 mb-1">Total Sudah Lunas</p>
+                        <h3 id="stat-lunas" class="text-3xl font-bold text-emerald-600 mb-4">Rp 0</h3>
+                        <div class="flex items-center gap-2 text-sm text-slate-600 bg-emerald-50 w-fit px-3 py-1 rounded-full text-emerald-700">
+                            <span>Alhamdulillah Cair</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Total Transaksi -->
+                <div class="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-6 shadow-md text-white relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
+                        <i data-lucide="wallet" class="w-24 h-24 text-white"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-sm font-medium text-indigo-100 mb-1">Total Keseluruhan</p>
+                        <h3 id="stat-total" class="text-3xl font-bold mb-4">Rp 0</h3>
+                        <div class="flex items-center gap-2 text-sm text-indigo-100">
+                            <span id="stat-count">Dari total 0 catatan</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Action Bar -->
+        <section class="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-full sm:w-96">
+                <i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input 
+                    type="text" 
+                    id="search-input"
+                    oninput="handleSearch(event)"
+                    placeholder="Cari nama teman..." 
+                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white outline-none transition-all"
+                />
+            </div>
+            <button 
+                onclick="openFormModal()"
+                class="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl shadow-sm transition-all font-medium"
+            >
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                Catat Utang Baru
+            </button>
+        </section>
+
+        <!-- Debt List -->
+        <section id="debts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards akan di-generate oleh JavaScript di sini -->
+        </section>
+        
+        <!-- Empty State (Hidden by default) -->
+        <div id="empty-state" class="hidden col-span-full py-12 text-center text-slate-500 bg-white rounded-3xl border border-dashed border-slate-300">
+            <i data-lucide="wallet" class="w-12 h-12 mx-auto mb-3 text-slate-300"></i>
+            <p>Belum ada catatan utang.</p>
+        </div>
+
+    </main>
+
+    <!-- Modal Form Tambah Utang -->
+    <div id="form-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-xl my-8">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100">
+                <h3 class="text-xl font-bold text-slate-800">Catat Utang Baru</h3>
+                <button onclick="closeFormModal()" class="text-slate-400 hover:bg-slate-100 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="debt-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Teman <span class="text-rose-500">*</span></label>
+                    <input required type="text" id="form-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="Misal: Budi" />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nominal (Rp) <span class="text-rose-500">*</span></label>
+                    <input required type="number" id="form-amount" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="500000" />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Pinjam <span class="text-rose-500">*</span></label>
+                        <input required type="date" id="form-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Jatuh Tempo (Opsional)</label>
+                        <input type="date" id="form-due" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Status Pembayaran</label>
+                    <select id="form-status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white">
+                        <option value="Belum Lunas">Belum Lunas</option>
+                        <option value="Nyicil">Nyicil</option>
+                        <option value="Lunas">Sudah Lunas</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Keterangan / Alasan</label>
+                    <textarea id="form-notes" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none" placeholder="Pinjam buat beli bensin..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Upload Bukti (Chat/Transfer)</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-colors relative group">
+                        <div class="space-y-1 text-center w-full">
+                            <div id="photo-preview-container">
+                                <i data-lucide="camera" class="mx-auto h-12 w-12 text-slate-400"></i>
+                            </div>
+                            <div class="flex text-sm text-slate-600 justify-center mt-2">
+                                <label class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                    <span>Upload file</span>
+                                    <input type="file" id="form-photo" accept="image/*" onchange="handlePhotoUpload(event)" class="sr-only" />
+                                </label>
+                            </div>
+                            <p class="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="closeFormModal()" class="flex-1 px-4 py-3 border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-medium">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all font-medium">
+                        Simpan Catatan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Image Viewer -->
+    <div id="image-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="relative max-w-3xl w-full flex justify-center">
+            <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white hover:text-rose-400 transition-colors">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <img id="image-viewer-img" src="" alt="Bukti Full" class="w-full h-auto max-h-[80vh] object-contain rounded-xl shadow-2xl bg-slate-900" onclick="event.stopPropagation()" />
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // State
+        let debts = [
+            {
+                id: 1,
+                name: 'Budi Santoso',
+                amount: 500000,
+                dateBorrowed: '2023-10-01',
+                dueDate: '2023-10-15',
+                status: 'Belum Lunas',
+                notes: 'Pinjem buat benerin motor',
+                photoProof: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=300&h=300'
+            },
+            {
+                id: 2,
+                name: 'Andi Dermawan',
+                amount: 250000,
+                dateBorrowed: '2023-10-20',
+                dueDate: '2023-11-20',
+                status: 'Nyicil',
+                notes: 'Beli tiket konser (udah bayar 100rb)',
+                photoProof: null
+            },
+            {
+                id: 3,
+                name: 'Siska',
+                amount: 150000,
+                dateBorrowed: '2023-09-10',
+                dueDate: '2023-09-20',
+                status: 'Lunas',
+                notes: 'Makan bareng di mall',
+                photoProof: null
+            }
+        ];
+
+        let searchQuery = '';
+        let uploadedPhotoBase64 = null;
+
+        // Inisialisasi
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            document.getElementById('form-date').valueAsDate = new Date();
+            renderApp();
+        });
+
+        // Utility Functions
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number);
+        };
+
+        const getOverdueStatus = (dueDate, status) => {
+            if (status === 'Lunas' || !dueDate) return { isOverdue: false, days: 0 };
+            const today = new Date();
+            const due = new Date(dueDate);
+            if (today > due) {
+                const diffTime = Math.abs(today - due);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return { isOverdue: true, days: diffDays };
+            }
+            return { isOverdue: false, days: 0 };
+        };
+
+        const getDaysUnpaid = (dateBorrowed, status) => {
+            if (status === 'Lunas') return 0;
+            const today = new Date();
+            const borrowed = new Date(dateBorrowed);
+            const diffTime = Math.abs(today - borrowed);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        };
+
+        // Render Data ke DOM
+        const renderDashboard = () => {
+            let totalUtang = 0;
+            let totalBelumLunas = 0;
+            let totalLunas = 0;
+            let orangNgutang = 0;
+
+            debts.forEach(debt => {
+                totalUtang += Number(debt.amount);
+                if (debt.status === 'Lunas') {
+                    totalLunas += Number(debt.amount);
+                } else {
+                    totalBelumLunas += Number(debt.amount);
+                    orangNgutang += 1;
+                }
+            });
+
+            document.getElementById('stat-belum-lunas').textContent = formatRupiah(totalBelumLunas);
+            document.getElementById('stat-orang-ngutang').textContent = `Di ${orangNgutang} Teman`;
+            document.getElementById('stat-lunas').textContent = formatRupiah(totalLunas);
+            document.getElementById('stat-total').textContent = formatRupiah(totalUtang);
+            document.getElementById('stat-count').textContent = `Dari total ${debts.length} catatan`;
+        };
+
+        const renderList = () => {
+            const container = document.getElementById('debts-container');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = ''; // Kosongkan container
+
+            const filteredDebts = debts.filter(debt => 
+                debt.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            if (filteredDebts.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+
+            filteredDebts.forEach(debt => {
+                const { isOverdue, days: overdueDays } = getOverdueStatus(debt.dueDate, debt.status);
+                const daysUnpaid = getDaysUnpaid(debt.dateBorrowed, debt.status);
+                
+                let statusColor = "bg-rose-100 text-rose-700 border-rose-200";
+                if (debt.status === 'Lunas') statusColor = "bg-emerald-100 text-emerald-700 border-emerald-200";
+                if (debt.status === 'Nyicil') statusColor = "bg-amber-100 text-amber-700 border-amber-200";
+
+                const dateBorrowedStr = new Date(debt.dateBorrowed).toLocaleDateString('id-ID');
+                const dueDateStr = debt.dueDate ? new Date(debt.dueDate).toLocaleDateString('id-ID') : null;
+
+                const cardHTML = `
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 text-xl">
+                                    ${debt.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-lg leading-tight">${debt.name}</h4>
+                                    <span class="text-xs px-2 py-0.5 rounded-full border ${statusColor} mt-1 inline-block font-medium">
+                                        ${debt.status}
+                                    </span>
+                                </div>
+                            </div>
+                            <button onclick="deleteDebt(${debt.id})" class="text-slate-400 hover:text-rose-500 transition-colors p-1">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+
+                        <div class="mb-4">
+                            <p class="text-sm text-slate-500 mb-1">Nominal</p>
+                            <p class="text-2xl font-bold text-slate-800">${formatRupiah(debt.amount)}</p>
+                        </div>
+
+                        <!-- Badges Info -->
+                        <div class="space-y-2 mb-4 flex-1">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-slate-500 flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4"></i> Dipinjam</span>
+                                <span class="font-medium">${dateBorrowedStr}</span>
+                            </div>
+                            
+                            ${dueDateStr ? `
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-slate-500 flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4"></i> Jatuh Tempo</span>
+                                    <span class="font-medium">${dueDateStr}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${debt.status !== 'Lunas' ? `
+                                <div class="bg-slate-50 p-3 rounded-xl mt-3 space-y-1 border border-slate-100">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Lama ngutang:</span>
+                                        <span class="font-semibold text-slate-700">${daysUnpaid} hari</span>
+                                    </div>
+                                    ${isOverdue ? `
+                                        <div class="flex justify-between text-xs text-rose-600 font-medium">
+                                            <span>Keterlambatan:</span>
+                                            <span>${overdueDays} hari lewat!</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100 mt-auto flex items-end justify-between">
+                            <div class="flex-1 pr-4">
+                                <p class="text-xs text-slate-400 mb-1">Catatan:</p>
+                                <p class="text-sm text-slate-600 line-clamp-2">${debt.notes || '-'}</p>
+                            </div>
+                            ${debt.photoProof ? `
+                                <button 
+                                    onclick="openImageModal('${debt.photoProof}')"
+                                    class="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 hover:ring-2 hover:ring-indigo-500 transition-all cursor-zoom-in group relative"
+                                >
+                                    <img src="${debt.photoProof}" alt="Bukti" class="w-full h-full object-cover" />
+                                    <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <i data-lucide="search" class="w-4 h-4 text-white"></i>
+                                    </div>
+                                </button>
+                            ` : `
+                                <div class="flex-shrink-0 w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
+                                    <i data-lucide="image" class="w-5 h-5"></i>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHTML);
+            });
+            lucide.createIcons(); // Render ulang icon Lucide yang baru ditambahkan
+        };
+
+        const renderApp = () => {
+            renderDashboard();
+            renderList();
+        };
+
+        // Actions
+        const handleSearch = (e) => {
+            searchQuery = e.target.value;
+            renderList();
+        };
+
+        const deleteDebt = (id) => {
+            if(confirm('Hapus catatan utang ini?')) {
+                debts = debts.filter(d => d.id !== id);
+                renderApp();
+            }
+        };
+
+        // Modal Form Handling
+        const openFormModal = () => {
+            document.getElementById('form-modal').classList.remove('hidden');
+        };
+
+        const closeFormModal = () => {
+            document.getElementById('form-modal').classList.add('hidden');
+            document.getElementById('debt-form').reset();
+            document.getElementById('form-date').valueAsDate = new Date(); // Reset tanggal ke hari ini
+            resetPhotoPreview();
+        };
+
+        const handlePhotoUpload = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    uploadedPhotoBase64 = reader.result;
+                    const previewContainer = document.getElementById('photo-preview-container');
+                    previewContainer.innerHTML = `
+                        <div class="relative mx-auto w-32 h-32 rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                            <img src="${uploadedPhotoBase64}" alt="Preview" class="w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <p class="text-white text-xs font-medium">Ganti Foto</p>
+                            </div>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        const resetPhotoPreview = () => {
+            uploadedPhotoBase64 = null;
+            document.getElementById('photo-preview-container').innerHTML = `
+                <i data-lucide="camera" class="mx-auto h-12 w-12 text-slate-400"></i>
+            `;
+            lucide.createIcons();
+        };
+
+        const handleFormSubmit = (e) => {
+            e.preventDefault();
+            
+            const newDebt = {
+                id: Date.now(),
+                name: document.getElementById('form-name').value,
+                amount: Number(document.getElementById('form-amount').value),
+                dateBorrowed: document.getElementById('form-date').value,
+                dueDate: document.getElementById('form-due').value,
+                status: document.getElementById('form-status').value,
+                notes: document.getElementById('form-notes').value,
+                photoProof: uploadedPhotoBase64
+            };
+
+            debts.unshift(newDebt); // Memasukkan ke urutan paling atas
+            closeFormModal();
+            renderApp();
+        };
+
+        // Image Modal Handling
+        const openImageModal = (src) => {
+            document.getElementById('image-viewer-img').src = src;
+            document.getElementById('image-modal').classList.remove('hidden');
+        };
+
+        const closeImageModal = () => {
+            document.getElementById('image-modal').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('image-viewer-img').src = '';
+            }, 200); // Clear image after transition
+        };
+
+    </script>
+</body>
+</html>
+
+
